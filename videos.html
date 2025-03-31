@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Flow - Videos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #00c6ff;
+            --secondary: #a100ff;
+            --bg-dark: #0f0c29;
+            --glass-light: rgba(255, 255, 255, 0.1);
+            --glass-lighter: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            overflow-x: hidden;
+            background: var(--bg-dark);
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* Optimized 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            will-change: transform;
+        }
+
+        /* Navigation */
+        .menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--glass-light);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            will-change: transform;
+        }
+
+        .menu-btn:hover {
+            background: var(--glass-lighter);
+            transform: scale(1.1);
+        }
+
+        .menu-line {
+            width: 20px;
+            height: 2px;
+            background: white;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(15, 12, 41, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            z-index: 99;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+
+        .nav-menu.active {
+            transform: translateX(-300px);
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: white;
+            font-size: 1.1rem;
+            padding: 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .nav-menu a:hover {
+            background: var(--glass-light);
+        }
+
+        /* Main Content */
+        .container {
+            padding: 80px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary), #0072ff, var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient 8s ease infinite;
+            background-size: 300% 300%;
+            text-align: center;
+            will-change: background-position;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .page-title {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .video-card {
+            background: var(--glass-light);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            will-change: transform;
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        /* Lazy loading for iframes */
+        .video-container iframe {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .video-container iframe.loaded {
+            opacity: 1;
+        }
+
+        .video-info {
+            padding: 16px;
+        }
+
+        .video-title {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .video-date {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* Social Links */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .social-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--glass-light);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            will-change: transform;
+        }
+
+        .social-icon:hover {
+            background: var(--glass-lighter);
+            transform: translateY(-4px);
+        }
+
+        .social-icon img {
+            width: 55%;
+            height: 55%;
+            filter: invert(1);
+        }
+
+        /* Loading state */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 70px 20px;
+            }
+            .video-grid {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 60px 15px;
+            }
+            .nav-menu {
+                width: 250px;
+            }
+            .nav-menu.active {
+                transform: translateX(-250px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Menu Button -->
+    <div class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+        <div class="menu-line"></div>
+        <div class="menu-line"></div>
+        <div class="menu-line"></div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="videos.html">Videos</a>
+        <a href="about.html">About Us</a>
+        <a href="feedback.html">Feedback</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="logo">COOL FLOW</h1>
+        <h2 class="page-title">Our Latest Videos</h2>
+        
+        <div class="video-grid">
+            <!-- Videos will be loaded here -->
+        </div>
+        
+        <div class="social-links">
+            <a href="https://www.youtube.com/@coolflow27" class="social-icon" target="_blank" aria-label="YouTube">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTE4Ni44IDy1LjJjLTUuMi0xLjgtMTAuOS0yLjItMTYuMy0yLjItNDMuMSAwLTg2LjIgNy44LTEyNi40IDIzLjItMTMuNCA0LjgtMTkuMiAxOS44LTE0LjQgMzMuMWw0MS42IDEyMy4xQzEwMS4zIDIwNi40IDExNCAyMTkgMTMwLjIgMjE5YzEuMiAwIDIuNS0uMSAzLjgtLjNsMTI0LjQtMzUuOWMxMy41LTMuOSAyMS44LTE3LjggMTcuOS0zMS4zcy0xNy44LTIxLjgtMzEuMy0xNy45bC0xMjAuNCAzNS40IDM1LjctMTA3LjljNC44LTEzLjQtMi4xLTI4LjItMTUuNS0zMy4xek0zMjAgMTI4YzAgMzUuMy0yOC43IDY0LTY0IDY0cy02NC0yOC43LTY0LTY0IDI4LjctNjQgNjQtNjQgNjQgMjguNyA2NCA2NHptMTQ0IDBjMC05Ny4zLTc4LjctMTc2LTE3Ni0xNzZTMjEyLjMgMzAuNyAyMTIuMyAxMjhjMCA5Ny4zIDc4LjcgMTc2IDE3NiAxNzZzMTc2LTc4LjcgMTc2LTE3NnptLTE2IDBjMC04OC40LTcxLjYtMTYwLTE2MC0xNjBTMTQ0IDM5LjYgMTQ0IDEyOHM3MS42IDE2MCAxNjAgMTYwIDE2MC03MS42IDE2MC0xNjB6Ii8+PC9zdmc+" alt="YouTube">
+            </a>
+            <a href="https://www.facebook.com/CoolFlow27" class="social-icon" target="_blank" aria-label="Facebook">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTI3OS4xNCAyODhsMS43LTE2OGgtMTY4djEwNS41aDk2LjU0bC0xMS4wOCA4NS44OEgxMTIuOHYyMTYuN0g0Ni43VjMxMS4zOEgwVjEyOC40Nmg0Ni43djg4LjYxaDEyNi4wN1YyODhoMTYuMzd6Ii8+PC9zdmc+" alt="Facebook">
+            </a>
+            <a href="https://www.tiktok.com/@cool.flow" class="social-icon" target="_blank" aria-label="TikTok">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTQ0OCAxMjhjMCAzNS4zLTI4LjcgNjQtNjQgNjRoLTk2djY0YzAgMzUuMy0yOC43IDY0LTY0IDY0cy02NC0yOC43LTY0LTY0VjY0SDEyOGMtMzUuMyAwLTY0IDI4LjctNjQgNjRzMjguNyA2NCA2NCA2NGg2NHYyNTZjMCAzNS4zIDI4LjcgNjQgNjQgNjRzNjQtMjguNyA2NC02NFYxOTJoNjRjMzUuMyAwIDY0LTI4LjcgNjQtNjR6Ii8+PC9zdmc+" alt="TikTok">
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Menu Toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const navMenu = document.getElementById('navMenu');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            menuBtn.classList.toggle('active');
+        });
+
+        // Optimized 3D Background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.scale(dpr, dpr);
+        }
+        
+        resizeCanvas();
+        
+        // Music icons
+        const icons = ['♪', '♫', '♬', '♩', '🎵', '🎶'];
+        const particles = [];
+        const particleCount = Math.min(30, Math.floor(window.innerWidth / 20));
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.size = Math.random() * 16 + 8;
+                this.speedX = Math.random() * 1.5 - 0.75;
+                this.speedY = Math.random() * 1.5 - 0.75;
+                this.icon = icons[Math.floor(Math.random() * icons.length)];
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 1 - 0.5;
+                this.opacity = Math.random() * 0.4 + 0.1;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.x < -20) this.x = window.innerWidth + 20;
+                if (this.x > window.innerWidth + 20) this.x = -20;
+                if (this.y < -20) this.y = window.innerHeight + 20;
+                if (this.y > window.innerHeight + 20) this.y = -20;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.globalAlpha = this.opacity;
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icon, 0, 0);
+                ctx.restore();
+            }
+        }
+        
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        let lastTime = 0;
+        const fps = 30;
+        const fpsInterval = 1000 / fps;
+        
+        function animateParticles(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const elapsed = timestamp - lastTime;
+            
+            if (elapsed > fpsInterval) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                }
+                
+                lastTime = timestamp - (elapsed % fpsInterval);
+            }
+            
+            requestAnimationFrame(animateParticles);
+        }
+        
+        // Video data - Removed videos 3, 4, and 8
+        const videos = [
+            { id: '1dXkhGCRPXw', title: 'Cool Flow Mix #27', date: 'June 2023' },
+            { id: '7rF5GPmnW8I', title: 'Summer Vibes Special', date: 'May 2023' },
+            { id: 'P06jNVR43zY', title: 'Urban Rhythms', date: 'February 2023' },
+            { id: 'sL5NZSae1rg', title: 'Electronic Dreams', date: 'January 2023' },
+            { id: 'Gey92VEha8E', title: 'Bass Drop Special', date: 'December 2022' },
+            { id: 'x5LQUjHMmy8', title: 'Retro Rewind', date: 'October 2022' },
+            { id: 'cQV4DaiPkbQ', title: 'Deep Focus Session', date: 'September 2022' }
+        ];
+        
+        // Load videos dynamically
+        function loadVideos() {
+            const videoGrid = document.querySelector('.video-grid');
+            
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.innerHTML = `
+                    <div class="video-container">
+                        <iframe 
+                            data-src="https://www.youtube.com/embed/${video.id}?rel=0&enablejsapi=1" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            loading="lazy"
+                            title="${video.title}">
+                        </iframe>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.title}</h3>
+                        <p class="video-date">Uploaded: ${video.date}</p>
+                    </div>
+                `;
+                videoGrid.appendChild(videoCard);
+            });
+            
+            // Lazy load videos when they come into view
+            const lazyLoadVideos = () => {
+                const videoContainers = document.querySelectorAll('.video-container');
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const iframe = entry.target.querySelector('iframe');
+                            if (iframe && !iframe.src) {
+                                iframe.src = iframe.dataset.src;
+                                iframe.onload = () => {
+                                    iframe.classList.add('loaded');
+                                };
+                            }
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    rootMargin: '200px',
+                    threshold: 0.1
+                });
+                
+                videoContainers.forEach(container => {
+                    observer.observe(container);
+                });
+            };
+            
+            // Wait for DOM to be fully loaded
+            document.addEventListener('DOMContentLoaded', lazyLoadVideos);
+            lazyLoadVideos(); // Also call immediately in case DOM is already loaded
+        }
+        
+        // Initialize everything
+        window.addEventListener('load', () => {
+            initParticles();
+            animateParticles();
+            loadVideos();
+        });
+        
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            particles.length = 0;
+            initParticles();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Cool Flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #00c6ff;
+            --secondary: #a100ff;
+            --bg-dark: #0f0c29;
+            --glass-light: rgba(255, 255, 255, 0.1);
+            --glass-lighter: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            overflow-x: hidden;
+            background: var(--bg-dark);
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            will-change: transform;
+        }
+
+        /* Navigation */
+        .menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--glass-light);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            will-change: transform;
+        }
+
+        .menu-btn:hover {
+            background: var(--glass-lighter);
+            transform: scale(1.1);
+        }
+
+        .menu-line {
+            width: 20px;
+            height: 2px;
+            background: white;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(15, 12, 41, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            z-index: 99;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+
+        .nav-menu.active {
+            transform: translateX(-300px);
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: white;
+            font-size: 1.1rem;
+            padding: 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .nav-menu a:hover {
+            background: var(--glass-light);
+        }
+
+        /* Main Content */
+        .container {
+            padding: 80px 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary), #0072ff, var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient 8s ease infinite;
+            background-size: 300% 300%;
+            text-align: center;
+            will-change: background-position;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .page-title {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        /* Feedback Form */
+        .feedback-section {
+            background: var(--glass-light);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Messages */
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 200, 100, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: rgba(200, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #ff6b6b;
+        }
+
+        /* Social Links */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--glass-light);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--glass-lighter);
+            transform: translateY(-5px);
+        }
+
+        .social-icon img {
+            width: 24px;
+            height: 24px;
+            filter: invert(1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 70px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 60px 15px;
+            }
+            .nav-menu {
+                width: 250px;
+            }
+            .nav-menu.active {
+                transform: translateX(-250px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Menu Button -->
+    <div class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+        <div class="menu-line"></div>
+        <div class="menu-line"></div>
+        <div class="menu-line"></div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="videos.html">Videos</a>
+        <a href="about.html">About Us</a>
+        <a href="feedback.html">Feedback</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="logo">COOL FLOW</h1>
+        <h2 class="page-title">Your Feedback</h2>
+        
+        <div class="feedback-section">
+            <!-- Updated Form with your working Formspree ID -->
+            <form id="feedback-form" action="https://formspree.io/f/xvgkblky" method="POST">
+                <input type="hidden" name="_from" value="Cool Flow Feedback">
+                <input type="hidden" name="_subject" value="New Feedback Submission">
+                <input type="hidden" name="_replyto" id="reply-to">
+                <input type="text" name="_gotcha" style="display:none">
+                
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <select id="subject" name="subject" required>
+                        <option value="" disabled selected>Select a topic</option>
+                        <option value="General Feedback">General Feedback</option>
+                        <option value="Music Suggestion">Music Suggestion</option>
+                        <option value="Technical Issue">Technical Issue</option>
+                        <option value="Collaboration">Collaboration</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Your Message</label>
+                    <textarea id="message" name="message" required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submit-btn">Send Feedback</button>
+            </form>
+            
+            <div id="success-message" class="success-message">
+                <h3>Thank you for your feedback!</h3>
+                <p>We appreciate you taking the time to share your thoughts with us.</p>
+            </div>
+            <div id="error-message" class="error-message">
+                <h3>Error submitting form</h3>
+                <p>Please try again or contact us directly at pauleennorio12@gmail.com</p>
+            </div>
+        </div>
+        
+        <div class="social-links">
+            <a href="https://www.youtube.com/@coolflow27" class="social-icon" target="_blank" aria-label="YouTube">
+                <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube">
+            </a>
+            <a href="https://facebook.com/CoolFlow27" class="social-icon" target="_blank" aria-label="Facebook">
+                <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" alt="Facebook">
+            </a>
+            <a href="https://tiktok.com/@cool.flow" class="social-icon" target="_blank" aria-label="TikTok">
+                <img src="https://cdn-icons-png.flaticon.com/512/3046/3046126.png" alt="TikTok">
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Menu Toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const navMenu = document.getElementById('navMenu');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            menuBtn.classList.toggle('active');
+        });
+
+        // Form Submission - Updated for your working Formspree
+        const feedbackForm = document.getElementById('feedback-form');
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const emailField = document.getElementById('email');
+
+        // Set reply-to dynamically
+        emailField.addEventListener('input', () => {
+            document.getElementById('reply-to').value = emailField.value;
+        });
+
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            errorMessage.style.display = 'none';
+            
+            try {
+                const formData = new FormData(feedbackForm);
+                const userName = document.getElementById('name').value;
+                
+                // Update subject with user's name
+                formData.set('_subject', `New Feedback from ${userName}`);
+                
+                const response = await fetch(feedbackForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    feedbackForm.reset();
+                    feedbackForm.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    
+                    // Additional confirmation
+                    alert('Thank you! Your feedback has been submitted successfully.');
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Form submission failed');
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                errorMessage.style.display = 'block';
+                errorMessage.innerHTML = `
+                    <h3>Error submitting form</h3>
+                    <p>${error.message || 'Please try again later'}</p>
+                    <p>You can also contact us directly at pauleennorio12@gmail.com</p>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Feedback';
+            }
+        });
+
+        // 3D Background with floating music icons
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.scale(dpr, dpr);
+        }
+        
+        resizeCanvas();
+        
+        // Music icons
+        const icons = ['♪', '♫', '♬', '♩', '🎵', '🎶'];
+        const particles = [];
+        const particleCount = Math.min(30, Math.floor(window.innerWidth / 20));
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.size = Math.random() * 16 + 8;
+                this.speedX = Math.random() * 1.5 - 0.75;
+                this.speedY = Math.random() * 1.5 - 0.75;
+                this.icon = icons[Math.floor(Math.random() * icons.length)];
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 1 - 0.5;
+                this.opacity = Math.random() * 0.4 + 0.1;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.x < -20) this.x = window.innerWidth + 20;
+                if (this.x > window.innerWidth + 20) this.x = -20;
+                if (this.y < -20) this.y = window.innerHeight + 20;
+                if (this.y > window.innerHeight + 20) this.y = -20;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.globalAlpha = this.opacity;
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icon, 0, 0);
+                ctx.restore();
+            }
+        }
+        
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        let lastTime = 0;
+        const fps = 30;
+        const fpsInterval = 1000 / fps;
+        
+        function animateParticles(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const elapsed = timestamp - lastTime;
+            
+            if (elapsed > fpsInterval) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                }
+                
+                lastTime = timestamp - (elapsed % fpsInterval);
+            }
+            
+            requestAnimationFrame(animateParticles);
+        }
+        
+        // Initialize everything
+        window.addEventListener('load', () => {
+            initParticles();
+            animateParticles();
+        });
+        
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            particles.length = 0;
+            initParticles();
+        });
+    </script>
+</body>
+</html>
